@@ -12,13 +12,13 @@ import os
 app = Flask(__name__)
 
 def SeleniumWS(itemName):
-    # chrome_options = webdriver.ChromeOptions()
-    # chrome_options.binary_location = os.environ.get("GOOGLE_CHROME_BIN")
-    # chrome_options.add_argument("--headless")
-    # chrome_options.add_argument("--disable-dev-shm-usage")
-    # chrome_options.add_argument("--no-sandbox")
-    # driver = webdriver.Chrome(executable_path=os.environ.get("CHROMEDRIVER_PATH"), chrome_options=chrome_options)
-    driver = webdriver.Chrome()
+    chrome_options = webdriver.ChromeOptions()
+    chrome_options.binary_location = os.environ.get("GOOGLE_CHROME_BIN")
+    chrome_options.add_argument("--headless")
+    chrome_options.add_argument("--disable-dev-shm-usage")
+    chrome_options.add_argument("--no-sandbox")
+    driver = webdriver.Chrome(executable_path=os.environ.get("CHROMEDRIVER_PATH"), chrome_options=chrome_options)
+    # driver = webdriver.Chrome() # usar en local
     busqueda = itemName.replace(' ', '+')
     driver.get('https://www.google.dz/search?q=' + busqueda + '&tbm=shop')
 
@@ -52,7 +52,7 @@ def SeleniumWS(itemName):
         itemObj['linkGS'] = item.find_element_by_class_name('ty2Wqb').get_attribute('href')
         items.append(itemObj)
 
-    driver.close()
+    driver.quit()
     return items
 
 @app.route('/', methods=['GET', 'POST'])
