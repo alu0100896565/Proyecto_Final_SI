@@ -1,63 +1,79 @@
-from flask import Flask, render_template, url_for, request, redirect
+from flask import Flask, render_template, url_for, request, redirect, g, session
 from flask_restful import Api, Resource, reqparse, abort
-from selenium import webdriver
-from selenium.webdriver.common.keys import Keys
-from selenium.webdriver.common.by import By
-from selenium.webdriver.support.ui import WebDriverWait
-from selenium.webdriver.support import expected_conditions as EC
-import json
+from flask_mysqldb import MySQL
 import os
+from functions import SeleniumWS
 
 
 app = Flask(__name__)
+app.secret_key = 'somesecretkeythatonlyishouldknow'
 
-def SeleniumWS(itemName):
-    chrome_options = webdriver.ChromeOptions()
-    chrome_options.binary_location = os.environ.get("GOOGLE_CHROME_BIN")
-    chrome_options.add_argument("--headless")
-    chrome_options.add_argument("--disable-dev-shm-usage")
-    chrome_options.add_argument("--no-sandbox")
-    driver = webdriver.Chrome(executable_path=os.environ.get("CHROMEDRIVER_PATH"), chrome_options=chrome_options)
-    # driver = webdriver.Chrome() # usar en local
-    busqueda = itemName.replace(' ', '+')
-    driver.get('https://www.google.dz/search?q=' + busqueda + '&tbm=shop')
+app.config['MYSQL_USER'] = 'b5d3dc83d57112'
+app.config['MYSQL_PASSWORD'] = '49504a27'
+app.config['MYSQL_HOST'] = 'eu-cdbr-west-03.cleardb.net'
+app.config['MYSQL_DB'] = 'heroku_ab41830ce9d6747'
+app.config['MYSQL_CURSORCLASS'] = 'DictCursor'
 
-    # Objeto que guarda el array de items para pasar a JSON
-    items = []
+mysql = MySQL(app)
 
-    # ps5
-    aa = driver.find_elements_by_css_selector('div.sh-dlr__list-result')
+@app.before_request
+def before_request():
+    g.user = None
 
-    for item in aa:
-        itemObj = {}
-        itemObj['fotoSrc'] = item.find_element_by_class_name('TL92Hc').get_attribute('src')
-        itemObj['name'] = item.find_element_by_class_name('xsRiS').text
-        itemObj['price'] = item.find_element_by_class_name('O8U6h').text
-        posibleDescripcion = item.find_elements_by_class_name('hBUZL')
-        if len(posibleDescripcion) == 2:
-            itemObj['description'] = posibleDescripcion[1].text
-        else:
-            itemObj['description'] = posibleDescripcion[2].text
-        itemObj['linkGS'] = item.find_element_by_class_name('FkMp').get_attribute('href')
-        items.append(itemObj)
-
-    # botas
-    bb = driver.find_elements_by_css_selector('div.sh-dgr__grid-result')
-
-    for item in bb:
-        itemObj = {}
-        itemObj['fotoSrc'] = item.find_element_by_class_name('MUQY0').find_element_by_tag_name('img').get_attribute('src')
-        itemObj['price'] = item.find_element_by_class_name('kHxwFf').text
-        itemObj['description'] = item.find_element_by_class_name('A2sOrd').text
-        itemObj['linkGS'] = item.find_element_by_class_name('ty2Wqb').get_attribute('href')
-        items.append(itemObj)
-
-    driver.quit()
-    return items
+    if 'user_id' in session:
+        g.user = session['user_id']
 
 @app.route('/', methods=['GET', 'POST'])
 def index():
-    return render_template('index.html')
+    if g.user != None:
+        print(g.user)
+        return redirect(url_for('busqueda'))
+    else:
+        return redirect(url_for('login'))
+
+@app.route('/login', methods=['GET', 'POST'])
+def login():
+    cur = mysql.connection.cursor()
+    if request.method == 'POST':
+        session.pop('user_id', None)
+
+        username = request.form['username']
+        password = request.form['password']
+        
+        cur.execute('''SELECT * FROM usuarios''')
+        pairUserPass = cur.fetchall()
+        user = [usr for usr in pairUserPass if usr['username'] == username and usr['password'] == password]
+        if len(user) != 0:
+            session['user_id'] = user[0]['username']
+            return redirect(url_for('busqueda'))
+        else:
+            return redirect(url_for('login'))
+    else:
+        session.pop('user_id', None)
+        return render_template('login.html')
+
+@app.route('/register', methods=['GET', 'POST'])
+def register():
+    cur = mysql.connection.cursor()
+    if request.method == 'POST':
+        session.pop('user_id', None)
+
+        username = request.form['username']
+        password1 = request.form['password1']
+        password2 = request.form['password2']
+
+        cur.execute('''SELECT * FROM usuarios''')
+        pairUserPass = cur.fetchall()
+        user = [usr for usr in pairUserPass if usr['username'] == username]
+        if len(user) == 0 and password1 == password2:
+            cur.execute('''INSERT INTO usuarios (username, password) VALUES (%s, %s)''', (username, password1))
+            session['user_id'] = username
+            mysql.connection.commit()
+            return redirect(url_for('busqueda'))
+        else:
+            return redirect(url_for('register'))
+    else:
+        return render_template('register.html')
 
 @app.route('/busqueda', methods=['GET', 'POST'])
 def busqueda():
@@ -66,7 +82,7 @@ def busqueda():
         items = SeleniumWS(itemName)
         return render_template('busqueda.html', items=items)
     else:
-        return redirect('/')
+        return render_template('busqueda.html', items=[])
 
 if __name__ == '__main__':
-    app.run()
+    app.run(debug=True)
