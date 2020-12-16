@@ -1,16 +1,13 @@
 {% extends 'base.html'%}
 
 {% block head %}
-<title>G4 SR Busquedas</title>
+<title>G4 SR Favoritos</title>
 <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
 {% endblock %}
 
 {% block content %}
     {% for item in items %}
         <div class='row item bg-light mt-2 mb-2'>
-            <div class='col-2'>
-                <img class='img-thumbnail img-fluid m-3' src='{{ item.fotoSrc }}'>
-            </div>
             <div class='col-9 mt-3'>
                 {% if 'name' in item %}
                 <h5 class='lead'>{{ item.name }}</h5>
