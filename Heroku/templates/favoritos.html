@@ -9,7 +9,7 @@
     {% for item in items %}
         <div class='row item bg-light mt-2 mb-2'>
             <div class='col-9 mt-3'>
-                {% if 'name' in item %}
+                {% if item.name != 'NoName' %}
                 <h5 class='lead'>{{ item.name }}</h5>
                 {% endif %}
                 <h6>{{ item.price }}</h6>
@@ -36,7 +36,8 @@
                 description: '{{ item.description }}',
                 price: '{{ item.price }}',
                 fotoSrc: '{{ item.fotoSrc }}',
-                linkGS: '{{ item.linkGS }}'
+                linkGS: '{{ item.linkGS }}',
+                tipo: '{{ item.tipo }}'
             },
             type: 'POST',
             url: '/favorite'
@@ -56,7 +57,8 @@
                 description: '{{ item.description }}',
                 price: '{{ item.price }}',
                 fotoSrc: '{{ item.fotoSrc }}',
-                linkGS: '{{ item.linkGS }}'
+                linkGS: '{{ item.linkGS }}',
+                tipo: '{{ item.tipo }}'
             },
             type: 'POST',
             url: '/delfavorite'

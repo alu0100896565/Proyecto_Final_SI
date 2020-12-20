@@ -12,7 +12,7 @@
                 <img class='img-thumbnail img-fluid m-3' src='{{ item.fotoSrc }}'>
             </div>
             <div class='col-9 mt-3'>
-                {% if 'name' in item %}
+                {% if item.name != 'NoName' %}
                 <h5 class='lead'>{{ item.name }}</h5>
                 {% endif %}
                 <h6>{{ item.price }}</h6>
@@ -32,14 +32,15 @@
 
 <script type=text/javascript>
     
-    $('#{{ loop.index }}').on('click', function() {
+    $('#{{ loop.index }}').on('click', function(event) {
         $.ajax({
             data: {
                 name: '{{ item.name }}',
                 description: '{{ item.description }}',
                 price: '{{ item.price }}',
                 fotoSrc: '{{ item.fotoSrc }}',
-                linkGS: '{{ item.linkGS }}'
+                linkGS: '{{ item.linkGS }}',
+                tipo: '{{ item.tipo }}'
             },
             type: 'POST',
             url: '/favorite'
@@ -52,14 +53,15 @@
         event.preventDefault();
     });
 
-    $('#{{ loop.index }}del').on('click', function() {
+    $('#{{ loop.index }}del').on('click', function(event) {
         $.ajax({
             data: {
                 name: '{{ item.name }}',
                 description: '{{ item.description }}',
                 price: '{{ item.price }}',
                 fotoSrc: '{{ item.fotoSrc }}',
-                linkGS: '{{ item.linkGS }}'
+                linkGS: '{{ item.linkGS }}',
+                tipo: '{{ item.tipo }}'
             },
             type: 'POST',
             url: '/delfavorite'

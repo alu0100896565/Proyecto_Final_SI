@@ -2,11 +2,11 @@ from flask import Flask, render_template, url_for, request, redirect, g, session
 from flask_restful import Api, Resource, reqparse, abort
 from flask_mysqldb import MySQL
 import os
-from functions import SeleniumWS
+from functions import SeleniumWS, amazonChar
 
 
 app = Flask(__name__)
-app.secret_key = 'somesecretkeythatonlyishouldknow'
+app.secret_key = 'somesecretkeythatonlyishouldknowasdasd'
 
 app.config['MYSQL_USER'] = 'b5d3dc83d57112'
 app.config['MYSQL_PASSWORD'] = '49504a27'
@@ -15,6 +15,7 @@ app.config['MYSQL_DB'] = 'heroku_ab41830ce9d6747'
 app.config['MYSQL_CURSORCLASS'] = 'DictCursor'
 
 mysql = MySQL(app)
+tipo_ = ''
 
 @app.before_request
 def before_request():
@@ -64,12 +65,10 @@ def register():
 
         cur.execute('''SELECT * FROM usuarios''')
         pairUserPass = cur.fetchall()
-        user = [usr for usr in pairUserPass if usr['username'] == username]
+        user = [usr for usr in pairUserPass if usr['username'] == username_]
         if len(user) == 0 and password1 == password2:
             cur.execute('''INSERT INTO usuarios (username, password) VALUES (%s, %s)''', [username_, password1])
             session['user_id'] = username_
-            cur.execute('CREATE TABLE IF NOT EXISTS ' + username_ + 
-            ''' LIKE userstable;''')
             mysql.connection.commit()
             return redirect(url_for('busqueda'))
         else:
@@ -84,10 +83,14 @@ def busqueda():
     cur = mysql.connection.cursor()
     if request.method == 'POST':
         itemName = request.form['itemName']
-        items = SeleniumWS(itemName)
-        cur.execute('SELECT name, description, price FROM ' + g.user)
+        items, tipo_ = SeleniumWS(itemName)
+        session['tipo'] = tipo_
+        cur.execute('''INSERT INTO busquedas (name, tipo, usuario) VALUES (%s, %s, %s)''', (itemName, tipo_, g.user))
+        mysql.connection.commit()
+        cur.execute('SELECT name, description, price FROM favoritos WHERE usuario = "' + g.user + '";')
         getData = cur.fetchall()
         for item in items:
+            item['tipo'] = tipo_
             itemCap = {'name': item['name'], 'description': item['description'], 'price': item['price']}
             if itemCap in getData:
                 item['fav'] = 'fav'
@@ -106,13 +109,10 @@ def favorite():
     price = request.form['price']
     fotoSrc = request.form['fotoSrc']
     linkGS = request.form['linkGS']
+    tipo = request.form['tipo']
 
-    if name:
-        cur.execute('INSERT INTO ' + g.user + ''' (name, fotoSrc, description, price, linkGS) VALUES (%s, %s, %s, %s, %s);''', 
-            (name, fotoSrc, description, price, linkGS))
-    else:
-        cur.execute('INSERT INTO ' + g.user + ''' (fotoSrc, description, price, linkGS) VALUES (%s, %s, %s, %s);''', 
-            (fotoSrc, description, price, linkGS))
+    cur.execute('''INSERT INTO favoritos (name, description, price, linkGS, usuario, tipo) VALUES (%s, %s, %s, %s, %s, %s);''', 
+        (name, description, price, linkGS, g.user, tipo))
     mysql.connection.commit()
     return jsonify({'nice': 'nice'})
 
@@ -123,14 +123,9 @@ def delfavorite():
     description = request.form['description']
     price = request.form['price']
 
-    if name:
-        cur.execute('DELETE FROM ' + g.user + 
-            ''' WHERE name = %s AND description = %s AND price = %s;''', 
-            (name, description, price))
-    else:
-        cur.execute('DELETE FROM ' + g.user + 
-            ''' WHERE description = %s AND price = %s;''', 
-            (description, price))
+    cur.execute('''DELETE FROM favoritos
+        WHERE name = %s AND description = %s AND price = %s AND usuario = "''' + g.user + '";', 
+        (name, description, price))
     mysql.connection.commit()
     return jsonify({'nice': 'nice'})
 
@@ -140,7 +135,7 @@ def misfavoritos():
     if not g.user:
         return redirect(url_for('login'))
     if request.method == 'POST':
-        cur.execute('SELECT * FROM ' + g.user)
+        cur.execute('SELECT * FROM favoritos WHERE usuario = "' + g.user + '";')
         itemsFav = cur.fetchall()
         return render_template('favoritos.html', items=itemsFav)
     else:
