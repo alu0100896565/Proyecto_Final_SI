@@ -8,6 +8,55 @@ from selenium.webdriver.support.select import Select
 import json
 import os
 import time
+import pandas as pd
+
+NUM_VAL_FAV  = 3
+NUM_VAL_BUSQ = 1
+
+defaultTipos = {
+    'Todos los departamentos': 0,
+    'Alexa Skills': 0,
+    'Alimentación y bebidas': 0,
+    'Amazon Warehouse': 0,
+    'Appstore para Android': 0,
+    'Audible audiolibros y podcasts exclusivos': 0,
+    'Bebé': 0,
+    'Belleza': 0,
+    'Bricolaje y herramientas': 0,
+    'Cheques regalo': 0,
+    'Coche - renting': 0,
+    'Coche y Moto - Piezas y accesorios': 0,
+    'Deportes y aire libre': 0,
+    'Dispositivos de Amazon': 0,
+    'Electrónica': 0,
+    'Equipaje': 0,
+    'Grandes electrodomésticos': 0,
+    'Handmade': 0,
+    'Hogar y cocina': 0,
+    'Iluminación': 0,
+    'Industria y ciencia': 0,
+    'Informática': 0,
+    'Instrumentos musicales': 0,
+    'Jardín': 0,
+    'Joyería': 0,
+    'Juguetes y juegos': 0,
+    'Libros': 0,
+    'Menos de 10€': 0,
+    'Moda': 0,
+    'Música Digital': 0,
+    'Música: CDs y vinilos': 0,
+    'Oficina y papelería': 0,
+    'Películas y TV': 0,
+    'Prime Video': 0,
+    'Productos para mascotas': 0,
+    'Relojes': 0,
+    'Ropa y accesorios': 0,
+    'Salud y cuidado personal': 0,
+    'Software': 0,
+    'Tienda Kindle': 0,
+    'Videojuegos': 0,
+    'Zapatos y complementos': 0
+}
 
 def SeleniumWS(itemName):
     # chrome_options = webdriver.ChromeOptions()
@@ -88,3 +137,20 @@ def amazonChar(itemName):
     sel = Select(driver.find_element_by_tag_name('select'))
     driver.close()
     return sel.first_selected_option.text
+
+def getPandas(usuarios, favoritos, busquedas):
+    dictDF = {}
+    dictPD = {'usuario': [], 'tipo': [], 'valoracion': []}
+    for user in usuarios:
+        dictDF[user['username']] = defaultTipos.copy()
+    for item in favoritos:
+        dictDF[item['usuario']][item['tipo']] += NUM_VAL_FAV
+    for item in busquedas:
+        dictDF[item['usuario']][item['tipo']] += NUM_VAL_BUSQ
+    for user in dictDF:
+        for tipo in dictDF[user]:
+            dictPD['usuario'].append(user)
+            dictPD['tipo'].append(tipo)
+            dictPD['valoracion'].append(dictDF[user][tipo])
+    valoracionesPD = pd.DataFrame(dictPD)
+    return valoracionesPD

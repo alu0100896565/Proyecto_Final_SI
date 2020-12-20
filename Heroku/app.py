@@ -1,8 +1,10 @@
 from flask import Flask, render_template, url_for, request, redirect, g, session, jsonify
 from flask_restful import Api, Resource, reqparse, abort
 from flask_mysqldb import MySQL
+import datetime
 import os
-from functions import SeleniumWS, amazonChar
+from functions import SeleniumWS, amazonChar, getPandas
+import pandas as pd
 
 
 app = Flask(__name__)
@@ -134,12 +136,24 @@ def misfavoritos():
     cur = mysql.connection.cursor()
     if not g.user:
         return redirect(url_for('login'))
-    if request.method == 'POST':
-        cur.execute('SELECT * FROM favoritos WHERE usuario = "' + g.user + '";')
-        itemsFav = cur.fetchall()
-        return render_template('favoritos.html', items=itemsFav)
-    else:
-        return render_template('favoritos.html', items=[])
+    cur.execute('SELECT * FROM favoritos WHERE usuario = "' + g.user + '";')
+    itemsFav = cur.fetchall()
+    return render_template('favoritos.html', items=itemsFav)
+
+@app.route('/recomendaciones', methods=['GET', 'POST'])
+def recomendaciones():
+    cur = mysql.connection.cursor()
+    if not g.user:
+        return redirect(url_for('login'))
+    cur.execute('SELECT * FROM usuarios')
+    usuarios = cur.fetchall()
+    cur.execute('SELECT * FROM favoritos')
+    itemsFav = cur.fetchall()
+    cur.execute('SELECT * FROM busquedas')
+    busquedas = cur.fetchall()
+    print(getPandas(usuarios, itemsFav, busquedas))
+    return render_template('favoritos.html', items=[])
+
 
 if __name__ == '__main__':
     app.run(debug=True)
