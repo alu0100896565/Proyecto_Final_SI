@@ -3,7 +3,7 @@ from flask_restful import Api, Resource, reqparse, abort
 from flask_mysqldb import MySQL
 import datetime
 import os
-from functions import SeleniumWS, amazonChar, getPandas
+from functions import SeleniumWS, amazonChar, getPandas, getValUser, amazonRecomend
 import pandas as pd
 
 
@@ -154,6 +154,25 @@ def recomendaciones():
     print(getPandas(usuarios, itemsFav, busquedas))
     return render_template('favoritos.html', items=[])
 
+@app.route('/recomendacionIndv', methods=['GET', 'POST'])
+def recomendacionIndv():
+    cur = mysql.connection.cursor()
+    if not g.user:
+        return redirect(url_for('login'))
+    cur.execute('SELECT * FROM favoritos WHERE usuario="' + g.user + '";')
+    itemsFav = cur.fetchall()
+    cur.execute('SELECT * FROM busquedas WHERE usuario="' + g.user + '";')
+    busquedas = cur.fetchall()
+    items = amazonRecomend(getValUser(itemsFav, busquedas))
+    cur.execute('SELECT name, description, price FROM favoritos WHERE usuario = "' + g.user + '";')
+    getData = cur.fetchall()
+    for item in items:
+        itemCap = {'name': item['name'], 'description': item['description'], 'price': item['price']}
+        if itemCap in getData:
+            item['fav'] = 'fav'
+        else:
+            item['fav'] = 'nofav'
+    return render_template('busqueda.html', items=items)
 
 if __name__ == '__main__':
     app.run(debug=True)
