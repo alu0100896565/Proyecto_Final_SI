@@ -61,13 +61,13 @@ defaultTipos = {
 }
 
 def SeleniumWS(itemName):
-    chrome_options = webdriver.ChromeOptions()
-    chrome_options.binary_location = os.environ.get("GOOGLE_CHROME_BIN")
-    chrome_options.add_argument("--headless")
-    chrome_options.add_argument("--disable-dev-shm-usage")
-    chrome_options.add_argument("--no-sandbox")
-    driver = webdriver.Chrome(executable_path=os.environ.get("CHROMEDRIVER_PATH"), chrome_options=chrome_options)
-    # driver = webdriver.Chrome() # usar en local
+    # chrome_options = webdriver.ChromeOptions()
+    # chrome_options.binary_location = os.environ.get("GOOGLE_CHROME_BIN")
+    # chrome_options.add_argument("--headless")
+    # chrome_options.add_argument("--disable-dev-shm-usage")
+    # chrome_options.add_argument("--no-sandbox")
+    # driver = webdriver.Chrome(executable_path=os.environ.get("CHROMEDRIVER_PATH"), chrome_options=chrome_options)
+    driver = webdriver.Chrome() # usar en local
     busqueda = itemName.replace(' ', '+')
     try:
         driver.get('https://www.google.es/search?q=' + busqueda + '&tbm=shop')
@@ -111,13 +111,13 @@ def SeleniumWS(itemName):
     return (items, tipo)
 
 def amazonRecomend(favCategories):
-    chrome_options = webdriver.ChromeOptions()
-    chrome_options.binary_location = os.environ.get("GOOGLE_CHROME_BIN")
-    chrome_options.add_argument("--headless")
-    chrome_options.add_argument("--disable-dev-shm-usage")
-    chrome_options.add_argument("--no-sandbox")
-    driver = webdriver.Chrome(executable_path=os.environ.get("CHROMEDRIVER_PATH"), chrome_options=chrome_options)
-    # driver = webdriver.Chrome() # usar en local
+    # chrome_options = webdriver.ChromeOptions()
+    # chrome_options.binary_location = os.environ.get("GOOGLE_CHROME_BIN")
+    # chrome_options.add_argument("--headless")
+    # chrome_options.add_argument("--disable-dev-shm-usage")
+    # chrome_options.add_argument("--no-sandbox")
+    # driver = webdriver.Chrome(executable_path=os.environ.get("CHROMEDRIVER_PATH"), chrome_options=chrome_options)
+    driver = webdriver.Chrome() # usar en local
     resultado = []
     busq = 4
     try:
@@ -152,7 +152,10 @@ def amazonRecomend(favCategories):
                 info = amzItems[i].find_element_by_tag_name('a')
                 itemCar['name'] = 'NoName'
                 itemCar['description'] = amzItems[i].find_element_by_tag_name('img').get_attribute('alt')
-                itemCar['price'] = amzItems[i].find_element_by_class_name('a-price-whole').text + ' €'
+                try:
+                    itemCar['price'] = amzItems[i].find_element_by_class_name('a-price-whole').text + ' €'
+                except:
+                    continue
                 itemCar['linkGS'] = info.get_attribute('href')
                 itemCar['fotoSrc'] = amzItems[i].find_element_by_tag_name('img').get_attribute('src')
                 itemCar['tipo'] = item[0]
@@ -164,13 +167,13 @@ def amazonRecomend(favCategories):
     return resultado
 
 def amazCateg(itemName):
-    chrome_options = webdriver.ChromeOptions()
-    chrome_options.binary_location = os.environ.get("GOOGLE_CHROME_BIN")
-    chrome_options.add_argument("--headless")
-    chrome_options.add_argument("--disable-dev-shm-usage")
-    chrome_options.add_argument("--no-sandbox")
-    driver = webdriver.Chrome(executable_path=os.environ.get("CHROMEDRIVER_PATH"), chrome_options=chrome_options)
-    # driver = webdriver.Chrome() # usar en local
+    # chrome_options = webdriver.ChromeOptions()
+    # chrome_options.binary_location = os.environ.get("GOOGLE_CHROME_BIN")
+    # chrome_options.add_argument("--headless")
+    # chrome_options.add_argument("--disable-dev-shm-usage")
+    # chrome_options.add_argument("--no-sandbox")
+    # driver = webdriver.Chrome(executable_path=os.environ.get("CHROMEDRIVER_PATH"), chrome_options=chrome_options)
+    driver = webdriver.Chrome() # usar en local
     driver.get('https://www.amazon.es/')
     inputB = driver.find_element_by_id('twotabsearchtextbox')
     inputB.send_keys(itemName)

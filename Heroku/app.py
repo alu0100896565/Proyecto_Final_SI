@@ -4,6 +4,7 @@ import datetime
 import os
 from functions import SeleniumWS, amazCateg, getPandas, getValUser, amazonRecomend, defaultTipos
 import pandas as pd
+from recomendation_system import getRecomendations, getRecomUser
 
 defaultTiposSet = set(defaultTipos.keys())
 
@@ -164,7 +165,8 @@ def recomendaciones():
     itemsFav = cur.fetchall()
     cur.execute('SELECT * FROM busquedas')
     busquedas = cur.fetchall()
-    print(getPandas(usuarios, itemsFav, busquedas))
+    getRecomendations(getPandas(usuarios, itemsFav, busquedas))
+    getRecomUser(g.user)
     return render_template('favoritos.html', items=[])
 
 @app.route('/recomendacionIndv', methods=['GET', 'POST'])
