@@ -1,11 +1,11 @@
 from flask import Flask, render_template, url_for, request, redirect, g, session, jsonify
-from flask_restful import Api, Resource, reqparse, abort
 from flask_mysqldb import MySQL
 import datetime
 import os
-from functions import SeleniumWS, amazonChar, getPandas, getValUser, amazonRecomend
+from functions import SeleniumWS, amazCateg, getPandas, getValUser, amazonRecomend, defaultTipos
 import pandas as pd
 
+defaultTiposSet = set(defaultTipos.keys())
 
 app = Flask(__name__)
 app.secret_key = 'somesecretkeythatonlyishouldknowasdasd'
@@ -86,7 +86,10 @@ def busqueda():
     if request.method == 'POST':
         itemName = request.form['itemName']
         items, tipo_ = SeleniumWS(itemName)
-        session['tipo'] = tipo_
+        if tipo_ not in defaultTiposSet:
+            session['tipo'] = 'Todos los departamentos'
+        else:
+            session['tipo'] = tipo_
         cur.execute('''INSERT INTO busquedas (name, tipo, usuario) VALUES (%s, %s, %s)''', (itemName, tipo_, g.user))
         mysql.connection.commit()
         cur.execute('SELECT name, description, price FROM favoritos WHERE usuario = "' + g.user + '";')
@@ -112,7 +115,17 @@ def favorite():
     fotoSrc = request.form['fotoSrc']
     linkGS = request.form['linkGS']
     tipo = request.form['tipo']
-
+    if name != 'NoName':
+        res = amazCateg(name)
+        if res and res in defaultTiposSet:
+            tipo = res
+    else:
+        res = amazCateg(description)
+        if res and res in defaultTiposSet:
+            tipo = res
+    if tipo not in defaultTiposSet:
+        tipo = 'Todos los departamentos'
+    print(tipo)
     cur.execute('''INSERT INTO favoritos (name, description, price, linkGS, usuario, tipo) VALUES (%s, %s, %s, %s, %s, %s);''', 
         (name, description, price, linkGS, g.user, tipo))
     mysql.connection.commit()
