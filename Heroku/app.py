@@ -2,7 +2,7 @@ from flask import Flask, render_template, url_for, request, redirect, g, session
 from flask_mysqldb import MySQL
 import datetime
 import os
-from functions import SeleniumWS, amazCateg, getPandas, getValUser, amazonRecomend, defaultTipos
+from functions import SeleniumWS, amazCateg, getPandas, getValUser, amazonRecomend, homeScrap, getPriceAmaz, defaultTipos
 import pandas as pd
 from recomendation_system import getRecomendations, getRecomUser
 
@@ -30,8 +30,21 @@ def before_request():
 @app.route('/', methods=['GET', 'POST'])
 def index():
     if g.user != None:
+        cur = mysql.connection.cursor()
         print(g.user)
-        return redirect(url_for('busqueda'))
+        sections = homeScrap()
+        itemsS = []
+        for key, value in sections.items():
+            itemsS += value
+        cur.execute('SELECT description, tipo FROM favoritos WHERE usuario = "' + g.user + '";')
+        getData = cur.fetchall()
+        for item in itemsS:
+            itemCap = {'description': item['description'], 'tipo': item['tipo']}
+            if itemCap in getData:
+                item['fav'] = 'fav'
+            else:
+                item['fav'] = 'nofav'
+        return render_template('home.html', sections=sections)
     else:
         return redirect(url_for('login'))
 
@@ -88,9 +101,7 @@ def busqueda():
         itemName = request.form['itemName']
         items, tipo_ = SeleniumWS(itemName)
         if tipo_ not in defaultTiposSet:
-            session['tipo'] = 'Todos los departamentos'
-        else:
-            session['tipo'] = tipo_
+            tipo_ = 'Todos los departamentos'
         cur.execute('''INSERT INTO busquedas (name, tipo, usuario) VALUES (%s, %s, %s)''', (itemName, tipo_, g.user))
         mysql.connection.commit()
         cur.execute('SELECT name, description, price FROM favoritos WHERE usuario = "' + g.user + '";')
@@ -132,6 +143,23 @@ def favorite():
     mysql.connection.commit()
     return jsonify({'nice': 'nice'})
 
+@app.route('/favoriteHome', methods=['POST'])
+def favoriteHome():
+    cur = mysql.connection.cursor()
+    name = request.form['name']
+    description = request.form['description']
+    fotoSrc = request.form['fotoSrc']
+    linkGS = request.form['linkGS']
+    tipo = request.form['tipo']
+    if tipo not in defaultTiposSet:
+        tipo = 'Todos los departamentos'
+    print(tipo)
+    price = getPriceAmaz(linkGS)
+    cur.execute('''INSERT INTO favoritos (name, description, price, linkGS, usuario, tipo) VALUES (%s, %s, %s, %s, %s, %s);''', 
+        (name, description, price, linkGS, g.user, tipo))
+    mysql.connection.commit()
+    return jsonify({'nice': 'nice'})
+
 @app.route('/delfavorite', methods=['POST'])
 def delfavorite():
     cur = mysql.connection.cursor()
@@ -142,6 +170,19 @@ def delfavorite():
     cur.execute('''DELETE FROM favoritos
         WHERE name = %s AND description = %s AND price = %s AND usuario = "''' + g.user + '";', 
         (name, description, price))
+    mysql.connection.commit()
+    return jsonify({'nice': 'nice'})
+
+@app.route('/delfavoriteHome', methods=['POST'])
+def delfavoriteHome():
+    cur = mysql.connection.cursor()
+    name = request.form['name']
+    description = request.form['description']
+    linkGS = request.form['linkGS']
+
+    cur.execute('''DELETE FROM favoritos
+        WHERE name = %s AND description = %s AND linkGS = %s AND usuario = "''' + g.user + '";', 
+        (name, description, linkGS))
     mysql.connection.commit()
     return jsonify({'nice': 'nice'})
 

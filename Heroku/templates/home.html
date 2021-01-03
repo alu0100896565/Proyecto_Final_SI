@@ -1,18 +1,24 @@
 {% extends 'base.html'%}
 
 {% block head %}
-<title>G4 SR Favoritos</title>
+<title>G4 SR Busquedas</title>
 <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
 {% endblock %}
 
 {% block content %}
-    {% for item in items %}
+    {% for key, items in sections.items() %}
+        {% set index1 = loop.index %}
+        <h1>{{key}}</h1>
+        {% for item in items %}
         <div class='row item bg-light mt-2 mb-2'>
+            <div class='col-2'>
+                <img class='img-thumbnail img-fluid m-3' src='{{ item.fotoSrc }}'>
+            </div>
             <div class='col-9 mt-3'>
                 {% if item.name != 'NoName' %}
                     <h5 class='lead'>{{ item.name }}</h5>
                 {% else %}
-                    <h5 class='lead'>Item Favorito #{{ loop.index }}</h5>
+                    <h5 class='lead'>Item recomendado #{{ loop.index }}</h5>
                 {% endif %}
                 <h6>{{ item.price }}</h6>
                 <p>{{ item.description }}</p>
@@ -20,58 +26,57 @@
             </div>
             <div class='col m-auto'>
                 {% if item.fav == 'nofav' %}
-                <button id='{{ loop.index }}' name='{{ loop.index }}' class='btn-success'>Favorite</button>
-                <button id='{{ loop.index }}del' name='{{ loop.index }}del' style='display: none;' class='btn-danger'>Delete Favorite</button>
+                <button id='{{index1}}{{ loop.index }}' name='{{index1}}{{ loop.index }}' class='btn-success'>Favorite</button>
+                <button id='{{index1}}{{ loop.index }}del' name='{{index1}}{{ loop.index }}del' style='display: none;' class='btn-danger'>Delete Favorite</button>
                 {% else %}
-                <button id='{{ loop.index }}' name='{{ loop.index }}' style='display: none;' class='btn-success'>Favorite</button>
-                <button id='{{ loop.index }}del' name='{{ loop.index }}del' class='btn-danger'>Delete Favorite</button>
+                <button id='{{index1}}{{ loop.index }}' name='{{index1}}{{ loop.index }}' style='display: none;' class='btn-success'>Favorite</button>
+                <button id='{{index1}}{{ loop.index }}del' name='{{index1}}{{ loop.index }}del' class='btn-danger'>Delete Favorite</button>
                 {% endif %}
             </div>
         </div>
 
 <script type=text/javascript>
     
-    $('#{{ loop.index }}').on('click', function() {
+    $('#{{index1}}{{ loop.index }}').on('click', function(event) {
         $.ajax({
             data: {
                 name: '{{ item.name }}',
                 description: '{{ item.description }}',
-                price: '{{ item.price }}',
                 fotoSrc: '{{ item.fotoSrc }}',
                 linkGS: '{{ item.linkGS }}',
                 tipo: '{{ item.tipo }}'
             },
             type: 'POST',
-            url: '/favorite'
+            url: '/favoriteHome'
         })
         .done(function(data) {
             console.log('donete');
         });
-        $("#{{ loop.index }}").css("display", "none");
-        $("#{{ loop.index }}del").css("display", "block");
+        $("#{{index1}}{{ loop.index }}").css("display", "none");
+        $("#{{index1}}{{ loop.index }}del").css("display", "block");
         event.preventDefault();
     });
 
-    $('#{{ loop.index }}del').on('click', function() {
+    $('#{{index1}}{{ loop.index }}del').on('click', function(event) {
         $.ajax({
             data: {
                 name: '{{ item.name }}',
                 description: '{{ item.description }}',
-                price: '{{ item.price }}',
                 fotoSrc: '{{ item.fotoSrc }}',
                 linkGS: '{{ item.linkGS }}',
                 tipo: '{{ item.tipo }}'
             },
             type: 'POST',
-            url: '/delfavorite'
+            url: '/delfavoriteHome'
         })
         .done(function(data) {
             console.log('donete delete');
         });
-        $("#{{ loop.index }}del").css("display", "none");
-        $("#{{ loop.index }}").css("display", "block");
+        $("#{{index1}}{{ loop.index }}del").css("display", "none");
+        $("#{{index1}}{{ loop.index }}").css("display", "block");
         event.preventDefault();
     });
 </script>
+        {% endfor %}
     {% endfor %}
 {% endblock %}

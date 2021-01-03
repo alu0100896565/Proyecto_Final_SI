@@ -107,7 +107,7 @@ def SeleniumWS(itemName):
         tipo = amazCateg(itemName)
     finally:
         driver.close()
-    print(items, tipo)
+    print(tipo)
     return (items, tipo)
 
 def amazonRecomend(favCategories):
@@ -203,6 +203,56 @@ def amazCateg(itemName):
         driver.close()
         return False
 
+def homeScrap():
+    # chrome_options = webdriver.ChromeOptions()
+    # chrome_options.binary_location = os.environ.get("GOOGLE_CHROME_BIN")
+    # chrome_options.add_argument("--headless")
+    # chrome_options.add_argument("--disable-dev-shm-usage")
+    # chrome_options.add_argument("--no-sandbox")
+    # driver = webdriver.Chrome(executable_path=os.environ.get("CHROMEDRIVER_PATH"), chrome_options=chrome_options)
+    driver = webdriver.Chrome() # usar en local
+    driver.get('https://www.amazon.es/')
+    mlvHref = driver.find_elements_by_xpath("//*[contains(text(), 'Últimas Novedades')]")[0].get_attribute('href')
+    driver.get(mlvHref)
+    secciones = {}
+    try:
+        WebDriverWait(driver, 2).until(EC.element_to_be_clickable((By.CSS_SELECTOR, 'div h3')))
+        sections = driver.find_elements_by_class_name('zg_homeWidget')
+        for section in sections:
+            nameSect = section.find_element_by_tag_name('h3').text
+            secciones[nameSect] = []
+            imgs = section.find_elements_by_css_selector('div a div img')
+            for img in imgs:
+                item = {}
+                item['name'] = 'NoName'
+                item['description'] = img.get_attribute('alt')
+                item['linkGS'] = img.find_element_by_xpath('..').find_element_by_xpath('..').get_attribute('href')
+                item['fotoSrc'] = img.get_attribute('src')
+                item['tipo'] = nameSect
+                secciones[nameSect].append(item)
+    finally:
+        driver.close()
+        return secciones
+
+def getPriceAmaz(link):
+    # chrome_options = webdriver.ChromeOptions()
+    # chrome_options.binary_location = os.environ.get("GOOGLE_CHROME_BIN")
+    # chrome_options.add_argument("--headless")
+    # chrome_options.add_argument("--disable-dev-shm-usage")
+    # chrome_options.add_argument("--no-sandbox")
+    # driver = webdriver.Chrome(executable_path=os.environ.get("CHROMEDRIVER_PATH"), chrome_options=chrome_options)
+    driver = webdriver.Chrome() # usar en local
+    try:
+        driver.get(link)
+        price = driver.find_element_by_id("price_inside_buybox").text.split('&')[0]
+    except:
+        try:
+            price = driver.find_element_by_id("mbc-price-1").text.split('&')[0]
+        except:      
+            price = driver.find_element_by_class_name("a-color-price").text.split('&')[0]
+    finally:
+        driver.close()
+        return price
 
 def getPandas(usuarios, favoritos, busquedas):
     dictDF = {}

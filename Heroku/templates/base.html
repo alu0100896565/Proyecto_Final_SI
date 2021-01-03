@@ -8,40 +8,60 @@
   </head>
   <body>
     <header class="bg-info">
-      Header
+      <nav class="navbar navbar-expand-md navbar-dark bg-dark navbar-default navbar-static-top">
+    <div class="container-fluid">
+      <p class="navbar-brand" href="#">Sistema Recomendador G-4</p>
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" aria-expanded="false" aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+      <div class="collapse navbar-collapse" id="navbarCollapse">
+        <ul class="navbar-nav me-auto mb-2 mb-md-0">
+          <li class="nav-item active">
+            <a class="nav-link" aria-current="page" href="/">Home</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="#">Link</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link  " href="/login">Logout</a>
+          </li>
+        </ul>
+        <form class="d-flex" action="/busqueda" method="POST">
+          <input id="itemName" name="itemName" class="form-control me-2" type="search" placeholder="Search" aria-label="Search">
+          <input id='botonBusqueda' class="btn btn-outline-success" type="submit" value='Search'>Search</button>
+        </form>
+      </div>
+    </div>
+  </nav>
     </header>
-    <nav class="bg-danger">
-      
-      <a class="navbar-brand" href="/login">Logout</a>
-    </nav>
-    <div class="container">
+    <!-- <div class="container">
       <form action="/busqueda" method="POST" class='row'>
-        <div class="row bg-success">
+        <div class="row bg-success align-middle">
           <div class="col">
-            <input type="text" id="itemName" name="itemName">
+            <input type="text" id="itemName" name="itemName" class='form-control'>
           </div>
           <div class="col">
-            <input type='submit' id='botonBusqueda' value='Buscar'>
+            <input type='submit' id='botonBusqueda' value='Buscar' class='btn-secondary btn-lg btn-block active'>
           </div>
         </div>
       </form>
-    </div>
+    </div> -->
     <div class="row m-4" id="mainContent">
-      <aside class="float-left bg-warning col-3">
+      <aside class="float-left bg-warning col-2">
         <div class="container">
           <form action="/misfavoritos" method="POST" class='row'>
-            <input type="submit" value="My Favorites">
+            <input type="submit" value="My Favorites" class='btn-lg btn-block btn-primary mt-10'>
           </form>
           <form action="/recomendaciones" method="POST" class='row'>
-            <input type="submit" value="Generar Recomendaciones">
+            <input type="submit" value="Generar Recomendaciones" class='btn-lg btn-block btn-primary mt-9'>
           </form>
           <form action="/recomendacionIndv" method="POST" class='row'>
-            <input type="submit" value="Generar Recomendacion Individual">
+            <input type="submit" value="Generar Recomendacion Individual" class='btn-lg btn-block btn-primary mt-9'>
           </form>
         </div>
       </aside>
-      <section class="float-right bg-primary col-9">
-        <div class="container" id="displayZone">
+      <section class="float-right bg-primary col-10">
+        <div class="container-fluid" id="displayZone">
           {% block content %}{% endblock %}
         </div>
       </section>

@@ -23,11 +23,11 @@
             </div>
             <div class='col m-auto'>
                 {% if item.fav == 'nofav' %}
-                <button id='{{ loop.index }}' name='{{ loop.index }}'>Favorite</button>
-                <button id='{{ loop.index }}del' name='{{ loop.index }}del' style='display: none;'>Delete Favorite</button>
+                <button id='{{ loop.index }}' name='{{ loop.index }}' class='btn-success'>Favorite</button>
+                <button id='{{ loop.index }}del' name='{{ loop.index }}del' style='display: none;' class='btn-danger'>Delete Favorite</button>
                 {% else %}
-                <button id='{{ loop.index }}' name='{{ loop.index }}' style='display: none;'>Favorite</button>
-                <button id='{{ loop.index }}del' name='{{ loop.index }}del'>Delete Favorite</button>
+                <button id='{{ loop.index }}' name='{{ loop.index }}' style='display: none;' class='btn-success'>Favorite</button>
+                <button id='{{ loop.index }}del' name='{{ loop.index }}del' class='btn-danger'>Delete Favorite</button>
                 {% endif %}
             </div>
         </div>
