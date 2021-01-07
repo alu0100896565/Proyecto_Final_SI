@@ -34,7 +34,7 @@ def index():
         print(g.user)
         sections = homeScrap()
         itemsS = []
-        for key, value in sections.items():
+        for _, value in sections.items():
             itemsS += value
         cur.execute('SELECT description, tipo FROM favoritos WHERE usuario = "' + g.user + '";')
         getData = cur.fetchall()
@@ -62,7 +62,7 @@ def login():
         user = [usr for usr in pairUserPass if usr['username'] == username and usr['password'] == password]
         if len(user) != 0:
             session['user_id'] = user[0]['username']
-            return redirect(url_for('busqueda'))
+            return redirect(url_for('index'))
         else:
             return redirect(url_for('login'))
     else:
