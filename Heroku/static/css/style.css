@@ -8,6 +8,7 @@ html, body {
   height: 100vh !important; 
   width: 100%; 
   margin: 0; 
+  padding: 0;
 }
 
 .item {
@@ -33,6 +34,8 @@ aside {
 #mainContent {
   max-height: 85% !important;
   height: 85%;
+  margin: 0;
+  padding: 0;
 }
 
 #mainContent section {
@@ -55,7 +58,11 @@ aside {
   margin-top: 20px !important;
   font-size: 15px !important;
 }
-
+/* 
 #itemName {
   
+} */
+
+.xd {
+  margin: auto;
 }

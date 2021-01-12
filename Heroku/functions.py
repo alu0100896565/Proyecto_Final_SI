@@ -9,6 +9,8 @@ import re
 import os
 import time
 import pandas as pd
+import random
+
 
 NUM_VAL_FAV  = 3
 NUM_VAL_BUSQ = 1
@@ -290,3 +292,23 @@ def getValUser(favoritos, busquedas):
     dictDF['Música: CDs y vinilos'] += dictDF['CDs y vinilos']
     dictDF['CDs y vinilos'] = 0
     return(sorted(dictDF.items(), key=lambda x: x[1], reverse=True)[:NUM_CATEGORIAS_RECOM])
+
+def getItemFromUsers(favoritos, users, userActual):
+    itemsRecomendacion = []
+    simplifList = ['name', 'description', 'price']
+    # Items del usuario para no recomendarle objetos que ya tiene en su lista
+    itemsUserActual = [{key: value for (key, value) in x.items() if key != 'usuario'} for x in favoritos if x['usuario'] == userActual]
+    userItemSimplif = [{key: value for (key, value) in x.items() if key in simplifList} for x in itemsUserActual]
+    # Matriz de items de los usuarios similares
+    matrixRecomendations = [[{key: value for (key, value) in x.items() if key != 'usuario'} for x in favoritos if x['usuario'] == user] for user in users]
+    for idx, listItem in enumerate(matrixRecomendations):
+        # Eliminar los ítems que el usuario ya tenga en su lista de favoritos
+        listItem = [item for item in listItem if {'name': item['name'], 'description': item['description'], 'price': item['price']} not in userItemSimplif]
+        # Ordena aleatoriamente la lista de favoritos del usuario vecino para recomendar ítems aleatorios de su lista
+        random.shuffle(listItem)
+        # Obtengo más ítems de los vecinos más próximos
+        itemsRecomendacion += listItem[:(6 - idx)]
+    # Añade la cualidad de no ser favorito del usuario
+    for item in itemsRecomendacion:
+        item['fav'] = 'nofav'
+    return itemsRecomendacion

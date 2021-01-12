@@ -2,7 +2,7 @@ from flask import Flask, render_template, url_for, request, redirect, g, session
 from flask_mysqldb import MySQL
 import datetime
 import os
-from functions import SeleniumWS, amazCateg, getPandas, getValUser, amazonRecomend, homeScrap, getPriceAmaz, defaultTipos
+from functions import SeleniumWS, amazCateg, getPandas, getValUser, amazonRecomend, homeScrap, getPriceAmaz, defaultTipos, getItemFromUsers
 import pandas as pd
 from recomendation_system import getRecomendations, getRecomUser
 
@@ -207,8 +207,9 @@ def recomendaciones():
     cur.execute('SELECT * FROM busquedas')
     busquedas = cur.fetchall()
     getRecomendations(getPandas(usuarios, itemsFav, busquedas))
-    getRecomUser(g.user)
-    return render_template('favoritos.html', items=[])
+    usuariosVecinos = getRecomUser(g.user)
+    itemsRecomendados = getItemFromUsers(itemsFav, usuariosVecinos, g.user)
+    return render_template('favoritos.html', items=itemsRecomendados)
 
 @app.route('/recomendacionIndv', methods=['GET', 'POST'])
 def recomendacionIndv():
