@@ -4,7 +4,7 @@ import datetime
 import os
 from functions import SeleniumWS, amazCateg, getPandas, getValUser, amazonRecomend, homeScrap, getPriceAmaz, defaultTipos, getItemFromUsers
 import pandas as pd
-from recomendation_system import getRecomendations, getRecomUser
+from recomendation_system import getRecomendations, getRecomUser, getRecomendationsSVD, getRecomendationsSVDpp
 
 defaultTiposSet = set(defaultTipos.keys())
 
@@ -210,6 +210,38 @@ def recomendaciones():
     usuariosVecinos = getRecomUser(g.user)
     itemsRecomendados = getItemFromUsers(itemsFav, usuariosVecinos, g.user)
     return render_template('favoritos.html', items=itemsRecomendados)
+
+@app.route('/recomendacionesSVD', methods=['GET', 'POST'])
+def recomendacionesSVD():
+    cur = mysql.connection.cursor()
+    if not g.user:
+        return redirect(url_for('login'))
+    cur.execute('SELECT * FROM usuarios')
+    usuarios = cur.fetchall()
+    cur.execute('SELECT * FROM favoritos')
+    itemsFav = cur.fetchall()
+    cur.execute('SELECT * FROM busquedas')
+    busquedas = cur.fetchall()
+    getRecomendationsSVD(getPandas(usuarios, itemsFav, busquedas))
+    # usuariosVecinos = getRecomUser(g.user)
+    # itemsRecomendados = getItemFromUsers(itemsFav, usuariosVecinos, g.user)
+    return render_template('favoritos.html', items=[])#itemsRecomendados)
+
+@app.route('/recomendacionesSVDpp', methods=['GET', 'POST'])
+def recomendacionesSVDpp():
+    cur = mysql.connection.cursor()
+    if not g.user:
+        return redirect(url_for('login'))
+    cur.execute('SELECT * FROM usuarios')
+    usuarios = cur.fetchall()
+    cur.execute('SELECT * FROM favoritos')
+    itemsFav = cur.fetchall()
+    cur.execute('SELECT * FROM busquedas')
+    busquedas = cur.fetchall()
+    getRecomendationsSVDpp(getPandas(usuarios, itemsFav, busquedas, busqAct=False))
+    # usuariosVecinos = getRecomUser(g.user)
+    # itemsRecomendados = getItemFromUsers(itemsFav, usuariosVecinos, g.user)
+    return render_template('favoritos.html', items=[])#itemsRecomendados)
 
 @app.route('/recomendacionIndv', methods=['GET', 'POST'])
 def recomendacionIndv():

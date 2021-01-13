@@ -256,7 +256,7 @@ def getPriceAmaz(link):
         driver.close()
         return price
 
-def getPandas(usuarios, favoritos, busquedas):
+def getPandas(usuarios, favoritos, busquedas, busqAct=True):
     dictDF = {}
     dictPD = {'usuario': [], 'tipo': [], 'valoracion': []}
     for user in usuarios:
@@ -264,9 +264,10 @@ def getPandas(usuarios, favoritos, busquedas):
     for item in favoritos:
         if item['tipo'] != 'Todos los departamentos':
             dictDF[item['usuario']][item['tipo']] += NUM_VAL_FAV
-    for item in busquedas:
-        if item['tipo'] != 'Todos los departamentos':
-            dictDF[item['usuario']][item['tipo']] += NUM_VAL_BUSQ
+    if busqAct:
+        for item in busquedas:
+            if item['tipo'] != 'Todos los departamentos':
+                dictDF[item['usuario']][item['tipo']] += NUM_VAL_BUSQ
     for user in dictDF:
         dictDF[user]['Música: CDs y vinilos'] += dictDF[user]['CDs y vinilos']
         dictDF[user]['CDs y vinilos'] = 0

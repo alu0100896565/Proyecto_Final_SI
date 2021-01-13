@@ -1,14 +1,15 @@
 from surprise import Dataset
 from surprise import Reader
 from surprise.model_selection import train_test_split
-from surprise import KNNBasic
-from surprise import KNNWithMeans
-from surprise import KNNWithZScore
-from surprise import accuracy
+from surprise import KNNBasic, KNNWithZScore, KNNWithMeans, SVD, accuracy, SVDpp
+from surprise.model_selection import GridSearchCV
 from surprise.model_selection import cross_validate
 from surprise.model_selection import KFold
+import surprise.accuracy
 from collections import defaultdict
 import operator
+from collections import defaultdict
+
 
 algo = ''
 trainSet = ''
@@ -140,9 +141,44 @@ def getRecomendations(dataF):
   
   results = cross_validate( # Tarda en finalizar. Se ejecuta unas 3 veces por cv=3
     algo=algo, data=data, measures=['FCP'], 
-    cv=3, return_train_measures=True
-    )
-  print(results['test_fcp'].mean())
+    cv=3, return_train_measures=True,
+    verbose=True)
+  
+def getRecomendationsSVD(dataF):
+  global algo
+  reader=Reader(rating_scale=(0., 1.))
+  dataF = dataF[dataF.valoracion > 0.05]
+  data = Dataset.load_from_df(dataF, reader)
+  trainset = data.build_full_trainset()
+  algo = SVD(n_epochs=30, lr_all=0.005)
+  algo.fit(trainset)
+
+  # Than predict ratings for all pairs (u, i) that are NOT in the training set.
+  testset = trainset.build_anti_testset()
+  predictions = algo.test(testset)
+  top_n = get_top_n(predictions, n=3)
+  # Print the recommended items for each user
+  for uid, user_ratings in top_n.items():
+      print(uid, [iid for (iid, _) in user_ratings])
+  
+def getRecomendationsSVDpp(dataF):
+  global algo
+  reader=Reader(rating_scale=(0., 1.))
+  dataF = dataF[dataF.valoracion != 0.0]
+  data = Dataset.load_from_df(dataF, reader)
+  trainset = data.build_full_trainset()
+  algo = SVDpp(n_epochs=10, lr_all=0.01)
+  algo.fit(trainset)
+
+  # Than predict ratings for all pairs (u, i) that are NOT in the training set.
+  testset = trainset.build_anti_testset()
+  predictions = algo.test(testset)
+
+  top_n = get_top_n(predictions, n=3)
+
+  # Print the recommended items for each user
+  for uid, user_ratings in top_n.items():
+      print(uid, [iid for (iid, _) in user_ratings])
 
 def getRecomUser(username):
   global algo, trainSet
@@ -150,3 +186,27 @@ def getRecomUser(username):
   listVecinosBien = [trainSet.to_raw_uid(x) for x in algo.get_neighbors(idUser, 5)]
   print(listVecinosBien)
   return listVecinosBien
+
+def get_top_n(predictions, n=3):
+    """Return the top-N recommendation for each user from a set of predictions.
+    Args:
+        predictions(list of Prediction objects): The list of predictions, as
+            returned by the test method of an algorithm.
+        n(int): The number of recommendation to output for each user. Default
+            is 10.
+    Returns:
+    A dict where keys are user (raw) ids and values are lists of tuples:
+        [(raw item id, rating estimation), ...] of size n.
+    """
+
+    # First map the predictions to each user.
+    top_n = defaultdict(list)
+    for uid, iid, true_r, est, _ in predictions:
+        top_n[uid].append((iid, est))
+
+    # Then sort the predictions for each user and retrieve the k highest ones.
+    for uid, user_ratings in top_n.items():
+        user_ratings.sort(key=lambda x: x[1], reverse=True)
+        top_n[uid] = user_ratings[:n]
+
+    return top_n
