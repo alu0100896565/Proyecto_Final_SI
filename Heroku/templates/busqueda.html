@@ -1,7 +1,7 @@
 {% extends 'base.html'%}
 
 {% block head %}
-<title>G4 SR Busquedas</title>
+<title>G4 SR Searchs</title>
 <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
 {% endblock %}
 
@@ -15,11 +15,11 @@
                 {% if item.name != 'NoName' %}
                     <h5 class='lead'>{{ item.name }}</h5>
                 {% else %}
-                    <h5 class='lead'>Item recomendado #{{ loop.index }}</h5>
+                    <h5 class='lead'>Recommended Item #{{ loop.index }}</h5>
                 {% endif %}
                 <h6>{{ item.price }}</h6>
                 <p>{{ item.description }}</p>
-                <a href='{{ item.linkGS }}'>Más información</a>
+                <a href='{{ item.linkGS }}'>More Information</a>
             </div>
             <div class='col m-auto'>
                 {% if item.fav == 'nofav' %}

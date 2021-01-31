@@ -160,6 +160,7 @@ def getRecomendationsSVD(dataF):
   # Print the recommended items for each user
   for uid, user_ratings in top_n.items():
       print(uid, [iid for (iid, _) in user_ratings])
+  return top_n
   
 def getRecomendationsSVDpp(dataF):
   global algo
@@ -179,6 +180,7 @@ def getRecomendationsSVDpp(dataF):
   # Print the recommended items for each user
   for uid, user_ratings in top_n.items():
       print(uid, [iid for (iid, _) in user_ratings])
+  return top_n
 
 def getRecomUser(username):
   global algo, trainSet

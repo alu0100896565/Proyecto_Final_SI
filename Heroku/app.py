@@ -222,10 +222,17 @@ def recomendacionesSVD():
     itemsFav = cur.fetchall()
     cur.execute('SELECT * FROM busquedas')
     busquedas = cur.fetchall()
-    getRecomendationsSVD(getPandas(usuarios, itemsFav, busquedas))
-    # usuariosVecinos = getRecomUser(g.user)
-    # itemsRecomendados = getItemFromUsers(itemsFav, usuariosVecinos, g.user)
-    return render_template('favoritos.html', items=[])#itemsRecomendados)
+    recom = getRecomendationsSVD(getPandas(usuarios, itemsFav, busquedas))
+    items = amazonRecomend(recom[g.user])
+    cur.execute('SELECT name, description, price FROM favoritos WHERE usuario = "' + g.user + '";')
+    getData = cur.fetchall()
+    for item in items:
+        itemCap = {'name': item['name'], 'description': item['description'], 'price': item['price']}
+        if itemCap in getData:
+            item['fav'] = 'fav'
+        else:
+            item['fav'] = 'nofav'
+    return render_template('busqueda.html', items=items)
 
 @app.route('/recomendacionesSVDpp', methods=['GET', 'POST'])
 def recomendacionesSVDpp():
@@ -238,10 +245,17 @@ def recomendacionesSVDpp():
     itemsFav = cur.fetchall()
     cur.execute('SELECT * FROM busquedas')
     busquedas = cur.fetchall()
-    getRecomendationsSVDpp(getPandas(usuarios, itemsFav, busquedas, busqAct=False))
-    # usuariosVecinos = getRecomUser(g.user)
-    # itemsRecomendados = getItemFromUsers(itemsFav, usuariosVecinos, g.user)
-    return render_template('favoritos.html', items=[])#itemsRecomendados)
+    recom = getRecomendationsSVDpp(getPandas(usuarios, itemsFav, busquedas, busqAct=False))
+    items = amazonRecomend(recom[g.user])
+    cur.execute('SELECT name, description, price FROM favoritos WHERE usuario = "' + g.user + '";')
+    getData = cur.fetchall()
+    for item in items:
+        itemCap = {'name': item['name'], 'description': item['description'], 'price': item['price']}
+        if itemCap in getData:
+            item['fav'] = 'fav'
+        else:
+            item['fav'] = 'nofav'
+    return render_template('busqueda.html', items=items)
 
 @app.route('/recomendacionIndv', methods=['GET', 'POST'])
 def recomendacionIndv():
