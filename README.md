@@ -4,9 +4,9 @@ Proyecto final de la asignatura Sistemas Inteligentes, realizar un Sistema Recom
 
 Realizado por:
 
--Eduardo Suárez Ojeda
--Florentín Pérez González
--Adrián Padilla Rojas
+- Eduardo Suárez Ojeda
+- Florentín Pérez González
+- Adrián Padilla Rojas
 
 ### Enlace a web:
 
