@@ -66,3 +66,10 @@ aside {
 .xd {
   margin: auto;
 }
+
+.container .mt-9 {
+  padding: 20px !important;
+  margin-top: 20px !important;
+  font-size: 0.8vm !important;
+  white-space: normal;
+}
